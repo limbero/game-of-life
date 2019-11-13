@@ -17,6 +17,11 @@ const basicGlider = `
   X
 XXX
 `;
+const basicGliderInverted = `
+XXX
+X  
+ X 
+`;
 
 function transposeArray(array){
   return array[0].map(function(col, i){
@@ -77,32 +82,26 @@ function shouldBeAliveNextTick(currentState, x, y) {
   }
 }
 
+function waa(arr, index) { // wrappedArrayAccess
+  if (index < 0) {
+    return arr[arr.length + index];
+  } else if (index >= arr.length) {
+    return arr[index - arr.length];
+  } else {
+    return arr[index];
+  }
+}
+
 function numberOfLiveNeighbors(currentState, x, y) {
   let n = 0;
-  if (x > 0) {
-    n += currentState[x-1][y];
-    if (y > 0) {
-      n += currentState[x-1][y-1];
-    }
-    if (y < vh-1) {
-      n += currentState[x-1][y+1];
-    }
-  }
-  if (x < vw-1) {
-    n += currentState[x+1][y];
-    if (y > 0) {
-      n += currentState[x+1][y-1];
-    }
-    if (y < vh-1) {
-      n += currentState[x+1][y+1];
-    }
-  }
-  if (y > 0) {
-    n += currentState[x][y-1];
-  }
-  if (y < vh-1) {
-    n += currentState[x][y+1];
-  }
+  n += waa(waa(currentState, x-1), y-1);
+  n += waa(waa(currentState, x  ), y-1);
+  n += waa(waa(currentState, x+1), y-1);
+  n += waa(waa(currentState, x-1), y  );
+  n += waa(waa(currentState, x+1), y  );
+  n += waa(waa(currentState, x-1), y+1);
+  n += waa(waa(currentState, x  ), y+1);
+  n += waa(waa(currentState, x+1), y+1);
   return n;
 }
 
@@ -149,11 +148,11 @@ async function main() {
 
   for (let y = 0; y < vh; y++) {
     for (let x = 0; x < vw; x++) {
-      startState[x][y] = unlikelyLife(0.3);
+      startState[x][y] = unlikelyLife(0.80);
     }
   }
 
-  putTextLifeIntoStateAtLocation(startState, basicGlider, 0, 0);
+  // putTextLifeIntoStateAtLocation(startState, basicGliderInverted, 10, 10);
   // console.log(numberOfLiveNeighbors(startState, 2, 2));
 
   window.requestAnimationFrame(() => step(ctx, startState, 2));
