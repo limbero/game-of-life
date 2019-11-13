@@ -1,5 +1,7 @@
 const vh = window.innerHeight;
 const vw = window.innerWidth;
+// const vh = 50;
+// const vw = 50;
 
 const imageDataArray = () => new Uint8ClampedArray(vw * vh * 4);
 
@@ -10,10 +12,41 @@ const emptyState = () => {
 
 const startState = emptyState();
 
-for (let y = 0; y < vh; y++) {
-  for (let x = 0; x < vw; x++) {
-    startState[x][y] = unlikelyLife();
-  }
+const basicGlider = `
+ X 
+  X
+XXX
+`;
+
+function transposeArray(array){
+  return array[0].map(function(col, i){
+    return array.map(function(row){
+        return row[i];
+    });
+  });
+}
+
+function textLifeToArrayLife(textLife) {
+  return transposeArray(
+    textLife
+      .slice(1, -1)
+      .split('\n')
+      .map(str => str
+        .split('')
+        .map(c => c === 'X' ? 1 : 0)
+      )
+    );
+}
+
+function putTextLifeIntoStateAtLocation(state, textLife, x, y) {
+  const arrayLife = textLifeToArrayLife(textLife);
+  if (x+arrayLife.length >= vw || y+arrayLife[0].length >= vh) { return false; }
+  
+  arrayLife.forEach((column, xIndex) => 
+    column.forEach((pixel, yIndex) => 
+      state[x+xIndex][y+yIndex] = pixel
+    )
+  );
 }
 
 function getRandomInt(max) {
@@ -80,9 +113,9 @@ function nextStateAndPixels(currentState) {
   for (let y = 0; y < vh; y++) {
     for (let x = 0; x < vw; x++) {
       const alive = shouldBeAliveNextTick(currentState, x, y);
-      nextState[x][y] = alive;
+      nextState[x][y] = +alive;
       for (let j = 0; j < 3; j++) {
-        pixels[i+j] = 255 * alive;
+        pixels[i+j] = 255 - 255 * alive;
       }
       pixels[i+3] = 255;
       i += 4;
@@ -94,13 +127,16 @@ function nextStateAndPixels(currentState) {
   };
 }
 
-function step(ctx, currentState) {
+function step(ctx, currentState, n) {
+  // console.log(
+  //   transposeArray(currentState).map(row => row.join("")).join("\n")
+  // );
   const { nextState, imageData} = nextStateAndPixels(currentState);
   ctx.clearRect(0, 0, vw, vh);
   ctx.putImageData(imageData, 0, 0);
   if (!same(nextState, currentState)) {
     console.log('new generation');
-    window.requestAnimationFrame(() => step(ctx, nextState));
+    window.requestAnimationFrame(() => step(ctx, nextState, n+1));
   }
 }
 
@@ -108,8 +144,33 @@ async function main() {
   const gameCanvas = document.getElementById('game-canvas');
   gameCanvas.height = vh;
   gameCanvas.width = vw;
+  fixBlur(gameCanvas);
   const ctx = gameCanvas.getContext('2d');
-  window.requestAnimationFrame(() => step(ctx, startState));
+
+  for (let y = 0; y < vh; y++) {
+    for (let x = 0; x < vw; x++) {
+      startState[x][y] = unlikelyLife(0.3);
+    }
+  }
+
+  putTextLifeIntoStateAtLocation(startState, basicGlider, 0, 0);
+  // console.log(numberOfLiveNeighbors(startState, 2, 2));
+
+  window.requestAnimationFrame(() => step(ctx, startState, 2));
+}
+
+function fixBlur(canvas) {
+  //get DPI
+  const dpi = window.devicePixelRatio;
+  //get CSS height
+  //the + prefix casts it to an integer
+  //the slice method gets rid of "px"
+  const style_height = +getComputedStyle(canvas).getPropertyValue("height").slice(0, -2);
+  //get CSS width
+  const style_width = +getComputedStyle(canvas).getPropertyValue("width").slice(0, -2);
+  //scale the canvas
+  canvas.setAttribute('height', style_height * dpi);
+  canvas.setAttribute('width', style_width * dpi);
 }
 
 window.addEventListener('DOMContentLoaded', main);
