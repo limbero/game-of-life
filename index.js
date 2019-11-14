@@ -10,8 +10,6 @@ const emptyState = () => {
   return columns.map(() => new Array(vh));
 };
 
-const startState = emptyState();
-
 const basicGlider = `
  X 
   X
@@ -148,6 +146,15 @@ function step(ctx, currentState, n, lastState) {
   if (!same(nextState, currentState) && !same(nextState, lastState)) {
     console.log('new generation');
     window.requestAnimationFrame(() => step(ctx, nextState, n+1, currentState));
+  } else {
+    const startState = emptyState();
+    for (let y = 0; y < vh; y++) {
+      for (let x = 0; x < vw; x++) {
+        startState[x][y] = unlikelyLife(Math.random());
+      }
+    }
+    console.log('new life');
+    window.requestAnimationFrame(() => step(ctx, startState, 1, startState));
   }
 }
 
@@ -158,9 +165,10 @@ async function main() {
   fixBlur(gameCanvas);
   const ctx = gameCanvas.getContext('2d');
 
+  const startState = emptyState();
   for (let y = 0; y < vh; y++) {
     for (let x = 0; x < vw; x++) {
-      startState[x][y] = unlikelyLife(0.1);
+      startState[x][y] = unlikelyLife(Math.random());
     }
   }
 
