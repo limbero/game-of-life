@@ -23,6 +23,18 @@ X
  X 
 `;
 
+const gospelGliderGun = `
+                        X           
+                      X X           
+            XX      XX            XX
+           X   X    XX            XX
+XX        X     X   XX              
+XX        X   X XX    X X           
+          X     X       X           
+           X   X                    
+            XX                      
+`;
+
 function transposeArray(array){
   return array[0].map(function(col, i){
     return array.map(function(row){
@@ -126,16 +138,16 @@ function nextStateAndPixels(currentState) {
   };
 }
 
-function step(ctx, currentState, n) {
+function step(ctx, currentState, n, lastState) {
   // console.log(
   //   transposeArray(currentState).map(row => row.join("")).join("\n")
   // );
   const { nextState, imageData} = nextStateAndPixels(currentState);
   ctx.clearRect(0, 0, vw, vh);
   ctx.putImageData(imageData, 0, 0);
-  if (!same(nextState, currentState)) {
+  if (!same(nextState, currentState) && !same(nextState, lastState)) {
     console.log('new generation');
-    window.requestAnimationFrame(() => step(ctx, nextState, n+1));
+    window.requestAnimationFrame(() => step(ctx, nextState, n+1, currentState));
   }
 }
 
@@ -148,14 +160,16 @@ async function main() {
 
   for (let y = 0; y < vh; y++) {
     for (let x = 0; x < vw; x++) {
-      startState[x][y] = unlikelyLife(0.80);
+      startState[x][y] = unlikelyLife(0);
     }
   }
 
-  // putTextLifeIntoStateAtLocation(startState, basicGliderInverted, 10, 10);
+  putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 10, 10);
+  putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 150, 10);
+  putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 10, 240);
   // console.log(numberOfLiveNeighbors(startState, 2, 2));
 
-  window.requestAnimationFrame(() => step(ctx, startState, 2));
+  window.requestAnimationFrame(() => step(ctx, startState, 1, startState));
 }
 
 function fixBlur(canvas) {
