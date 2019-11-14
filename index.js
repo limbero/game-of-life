@@ -160,13 +160,13 @@ async function main() {
 
   for (let y = 0; y < vh; y++) {
     for (let x = 0; x < vw; x++) {
-      startState[x][y] = unlikelyLife(0);
+      startState[x][y] = unlikelyLife(0.1);
     }
   }
 
-  putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 10, 10);
-  putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 150, 10);
-  putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 10, 240);
+  // putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 10, 10);
+  // putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 150, 10);
+  // putTextLifeIntoStateAtLocation(startState, gospelGliderGun, 10, 240);
   // console.log(numberOfLiveNeighbors(startState, 2, 2));
 
   window.requestAnimationFrame(() => step(ctx, startState, 1, startState));
